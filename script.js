@@ -59,6 +59,14 @@ todoSort.addEventListener('click', function () {
     }
 });
 
+function requestNotificationPermission() {
+    if (Notification.permission !== "granted") {
+        Notification.requestPermission().then(permission => {
+            console.log('Notification permission:', permission);
+        });
+    }
+}
+
 
 function addToDo() {
     let todoName = todo.value;
@@ -251,9 +259,13 @@ function todoEventListener(todo, todoEdit, todoDelete, todoSubtask) {
         let timeValue = dialogTime.value;
         let currentTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 
-        if (timeValue < currentTime) {
-            alert("Add the time after " + currentTime);
-            return;
+  
+
+        if(dateValue === currentDate) {
+            if (timeValue < currentTime) {
+                alert("Add the time after " + currentTime);
+                return;
+            }
         }
 
         currentTodoItem.value = dialogInput.value;
@@ -337,9 +349,11 @@ function loadTasks() {
     if (allTasks !== '') {
         allTasks.forEach(task => {
             const todo = createToDo(task.todoName, task.todoPriority, task.id, task.todoTime, task.todoDate);
+            scheduleNotification(task.id, task.todoDate, task.todoTime);
 
             task.subtasks.forEach(subTask => {
                 createSubTask(subTask.subTaskName, subTask.subTaskPriority, subTask.subTaskId, subTask.subTaskTime, subTask.subTaskDate, todo);
+                scheduleNotification(subTask.subTaskId, subTask.subTaskDate, subTask.subTaskTime);
             });
         });
     }
@@ -372,6 +386,19 @@ function searchTodos() {
             todo.style.display = 'block';
         } else {
             todo.style.display = 'none';
+        }
+
+        const subTasks = todo.querySelectorAll('.todo-subtask');
+
+        if (subTasks !== '') {
+            subTasks.forEach(subtask => {
+                const subtaskName = subtask.querySelector('.sub-task-input').value.toLowerCase();
+                if (subtaskName.includes(searchValue)) {
+                    subtask.style.display = 'block';
+                } else {
+                    subtask.style.display = 'none';
+                }
+            });
         }
     });
 }
@@ -434,7 +461,7 @@ function addSubTodo() {
         alert("Sub Task already exists");
         return;
     }
-    
+
     let subTaskPriorityValue = subTaskPriority.value;
 
     if (subTaskPriorityValue == '' || subTaskPriorityValue.trim() == '') {
@@ -621,4 +648,41 @@ function importTasks(event) {
     };
 
     reader.readAsText(file);
+}
+
+function scheduleNotification(itemId, dateValue, timeValue) {
+
+    if (!("Notification" in window)) {
+        alert("Doesnt support notification");
+        return;
+    }
+
+    const taskDateTime = new Date(`${dateValue}T${timeValue}`);
+    const notificationTime = taskDateTime.getTime() - (10 * 60 * 1000); // 10 minutes before notification
+    console.log("Scheduled notification time: ", new Date(notificationTime));
+
+    if (notificationTime > Date.now()) {
+        const timeUntilNotification = notificationTime - Date.now();
+        console.log("Time until notification: ", timeUntilNotification);
+
+        setTimeout(() => {
+            showNotification(itemId);
+        }, timeUntilNotification);
+    } else {
+        console.log("Notification time is in the past, not scheduling.");
+    }
+}
+
+function showNotification(itemId) {
+    const item = document.getElementById(itemId);
+    const text = item.querySelector('.text').value;
+
+    if (Notification.permission === "granted") {
+        new Notification('Task Reminder', {
+            body: `Remainder: ${text} is due soon!`,
+            icon: 'path/to/icon.png' 
+        });
+    } else {
+        console.log("Notification permission not granted.");
+    }
 }
