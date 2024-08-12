@@ -72,6 +72,15 @@ function addToDo() {
         return;
     }
 
+    let allTasks = JSON.parse(localStorage.getItem('allTodos')) || [];
+
+    let duplicateTask = allTasks.some(task => task.todoName.toLowerCase() === todoName.toLowerCase());
+
+    if (duplicateTask) {
+        alert("Task already exists");
+        return;
+    }
+
     let priorityValue = priority.value;
     console.log(priorityValue);
 
@@ -86,10 +95,7 @@ function addToDo() {
     console.log(timeValue);
     let currentTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 
-    if (timeValue < currentTime) {
-        alert("Add the time after " + currentTime);
-        return;
-    }
+
 
     let dateValue = todoDate.value;
     let currentDate = now.toISOString().split('T')[0];
@@ -97,6 +103,13 @@ function addToDo() {
     if (dateValue < currentDate) {
         alert("You cannot add previous dates");
         return;
+    }
+
+    if (dateValue === currentDate) {
+        if (timeValue < currentTime) {
+            alert("Add the time after " + currentTime);
+            return;
+        }
     }
 
     createToDo(todoName, priorityValue, todoId, timeValue, dateValue);
@@ -405,6 +418,23 @@ function addSubTodo() {
         return;
     }
 
+    let allTasks = JSON.parse(localStorage.getItem('allTodos')) || [];
+
+    let duplicateSubTask = false;
+
+    allTasks.forEach(task => {
+        task.subtasks.forEach(subTask => {
+            if (subTask.subTaskName.toLowerCase() === subTaskName.toLowerCase()) {
+                duplicateSubTask = true;
+            }
+        });
+    });
+
+    if (duplicateSubTask) {
+        alert("Sub Task already exists");
+        return;
+    }
+    
     let subTaskPriorityValue = subTaskPriority.value;
 
     if (subTaskPriorityValue == '' || subTaskPriorityValue.trim() == '') {
@@ -417,17 +447,19 @@ function addSubTodo() {
     let subTaskTimeValue = subTaskTime.value;
     let currentTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 
-    if (subTaskTimeValue < currentTime) {
-        alert("Add the time after " + currentTime);
-        return;
-    }
-
     let subTaskDateValue = subTaskDate.value;
     let currentDate = now.toISOString().split('T')[0];
 
     if (subTaskDateValue < currentDate) {
         alert("You cannot add previous dates");
         return;
+    }
+
+    if (subTaskDateValue === currentDate) {
+        if (subTaskTimeValue < currentTime) {
+            alert("Add the time after " + currentTime);
+            return;
+        }
     }
 
     createSubTask(subTaskName, subTaskPriorityValue, `subtask-${++subTaskCounter}`, subTaskTimeValue, subTaskDateValue, currentParentTodo);
@@ -534,31 +566,31 @@ function subTaskEventListener(subTask, subTaskEdit, subTaskDelete) {
         saveTasks();
     });
 
-    // subTask.addEventListener('dragstart', (e) => {
-    //     e.dataTransfer.setData('text/plain', subTask.getAttribute('id'));
-    //     e.dataTransfer.effectAllowed = 'move';
-    // });
+    subTask.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', subTask.getAttribute('id'));
+        e.dataTransfer.effectAllowed = 'move';
+    });
 
-    // subTask.addEventListener('dragover', (e) => {
-    //     e.preventDefault();
-    //     e.dataTransfer.dropEffect = 'move';
-    // });
+    subTask.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    });
 
-    // subTask.addEventListener('drop', (e) => {
-    //     e.preventDefault();
-    //     const draggedElementId = e.dataTransfer.getData('text/plain');
-    //     const draggedElement = document.getElementById(draggedElementId);
+    subTask.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const draggedElementId = e.dataTransfer.getData('text/plain');
+        const draggedElement = document.getElementById(draggedElementId);
 
-    //     if (draggedElement !== subTask) {
-    //         todoContainer.insertBefore(draggedElement, subTask);
-    //         saveTasks();
-    //     }
-    // });
+        if (draggedElement !== subTask) {
+            todoContainer.insertBefore(draggedElement, subTask);
+            saveTasks();
+        }
+    });
 }
 
 function exportTasks() {
     const allTasks = JSON.parse(localStorage.getItem('allTodos')) || [];
-    const dataStr = JSON.stringify(allTasks, null, 2); 
+    const dataStr = JSON.stringify(allTasks, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
 
     const exportFileDefaultName = 'tasks.json';
