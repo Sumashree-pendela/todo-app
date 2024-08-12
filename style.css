@@ -1,0 +1,71 @@
+.container {
+    width: 850px;
+    padding-top: 30px;
+}
+
+h1 {
+    text-align: center;
+}
+
+body.dark-mode .todo-container, body.dark-mode {
+    background-color: rgb(26, 22, 22);
+}
+
+#todoSearch {
+    margin: 10px;
+}
+
+.todoInput {
+    width: 290px;
+}
+
+#todoPriority {
+    margin: 10px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+#todoSort {
+    height: 35px;
+    margin-left: 10px;
+    margin-top: 20px;
+}
+
+.todo-edit, .todo-del, .todo-date, .todo-time, .todo-subtask {
+    margin-left: 8px;
+}
+
+.todo-input {
+    margin: 10px;
+}
+
+.todo {
+    display: block;
+}
+
+.todo-priority {
+    height: 30px;
+    width: 90px;
+}
+
+.dialog-content, .subTaskDialog {
+    display: none;
+}
+
+.dialog-actions {
+    padding-top: 10px;
+    padding-left: 100px;
+}
+
+.sub-task {
+    margin-left: 80px;
+    margin-top: 10px;
+}
+
+.sub-task-input, .sub-task-priority, .sub-task-date, .sub-task-time, .sub-task-edit, .sub-task-del {
+    margin-right: 10px;
+}
+
+#importFileInput {
+    display: none;
+}
